@@ -1,66 +1,45 @@
-## Foundry
+# Server-side Web Proof Generation for Twitter API Data
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This example demonstrates how to use [vlayer Web Proof](https://book.vlayer.xyz/features/web.html) to notarize an HTTP request to:
 
-Foundry consists of:
-
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```
+https://api.twitter.com/2/users/me?user.fields=id,name,username,created_at,description,profile_image_url,public_metrics
 ```
 
-### Test
+It generates a **Zero-Knowledge Proof (ZK proof)** based on the API response, which can then be verified by an **on-chain EVM smart contract**.
 
-```shell
-$ forge test
+---
+
+## How to Run vlayer proving
+
+### 1. Build Contracts
+```sh
+cd {projectPath}
+forge build
 ```
 
-### Format
-
-```shell
-$ forge fmt
+### 2. Install JS Dependencies
+```sh
+cd vlayer
+bun install
 ```
 
-### Gas Snapshots
+### 3. Set Twitter API Bearer Token
+Enter your Twitter oauth token to the `prove.ts`:
 
-```shell
-$ forge snapshot
+```
+const X_API_BEARER_TOKEN = "insert here your oauth2 token";
 ```
 
-### Anvil
+To get your user OAuth token, you need to create a [X/Twitter Developer App](https://developer.twitter.com/en/portal/dashboard) and complete the OAuth 2.0 flow. 
 
-```shell
-$ anvil
+### 4. Start Local Devnet
+```sh
+bun run devnet:up
 ```
 
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+### 5. Run Proving Process
+```sh
+bun run prove:dev
 ```
 
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```

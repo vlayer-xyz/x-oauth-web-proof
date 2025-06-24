@@ -1,8 +1,8 @@
 /// <reference types="bun" />
 
 import { createVlayerClient } from "@vlayer/sdk";
-import proverSpec from "../out/KrakenProver.sol/KrakenProver";
-import verifierSpec from "../out/KrakenVerifier.sol/KrakenVerifier";
+import proverSpec from "../out/XProver.sol/XProver";
+import verifierSpec from "../out/XVerifier.sol/XVerifier";
 import {
   getConfig,
   createContext,
@@ -11,7 +11,8 @@ import {
 } from "@vlayer/sdk/config";
 import { spawn } from "child_process";
 
-const URL_TO_PROVE = "https://api.kraken.com/0/public/Ticker?pair=ETHUSD";
+const URL_TO_PROVE = "https://api.twitter.com/2/users/me?user.fields=id,name,username,created_at,description,profile_image_url,public_metrics";
+const X_API_BEARER_TOKEN = "insert here your oauth2 token";
 
 const config = getConfig();
 const { chain, ethClient, account, proverUrl, confirmations, notaryUrl } =
@@ -36,6 +37,8 @@ async function generateWebProof() {
     String(notaryUrl),
     "--url",
     URL_TO_PROVE,
+    `-H Authorization: Bearer ${X_API_BEARER_TOKEN}`,
+    "-H User-Agent: curl/8.7.1",
   ]);
   return stdout;
 }
@@ -72,7 +75,7 @@ const hash = await vlayer.prove({
   gasLimit: config.gasLimit,
 });
 const result = await vlayer.waitForProvingResult({ hash });
-const [proof, avgPrice] = result;
+const [proof, username, followersCount] = result;
 console.log("✅ Proof generated");
 
 console.log("⏳ Verifying...");
@@ -82,7 +85,7 @@ const gas = await ethClient.estimateContractGas({
   address: verifier,
   abi: verifierSpec.abi,
   functionName: "verify",
-  args: [proof, avgPrice],
+  args: [proof, username, followersCount],
   account,
   blockTag: "pending",
 });
@@ -91,7 +94,7 @@ const txHash = await ethClient.writeContract({
   address: verifier,
   abi: verifierSpec.abi,
   functionName: "verify",
-  args: [proof, avgPrice],
+  args: [proof, username, followersCount],
   chain,
   account,
   gas,
